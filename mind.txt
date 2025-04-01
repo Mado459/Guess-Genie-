@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="guessGenie">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GuessGenie - The Magical Guessing Game</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #9c27b0;
+            --secondary-color: #ba68c8;
+            --accent-color: #ff9800;
+            --dark-color: #2d3436;
+            --light-color: #f5f6fa;
+            --success-color: #4caf50;
+            --warning-color: #ffeb3b;
+            --error-color: #f44336;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--light-color), #dfe6e9);
+            color: var(--dark-color);
+            min-height: 100vh;
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Floating orbs background */
+        .vfx-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.3;
+            z-index: -1;
+            animation: float 15s infinite linear;
+        }
+
+        .vfx-orb:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            background: var(--primary-color);
+            top: 20%;
+            left: 10%;
+            animation-duration: 20s;
+        }
+
+        .vfx-orb:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-color);
+            top: 60%;
+            left: 70%;
+            animation-duration: 25s;
+        }
+
+        .vfx-orb:nth-child(3) {
+            width: 200px;
+            height: 200px;
+            background: var(--secondary-color);
+            top: 30%;
+            left: 50%;
+            animation-duration: 15s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(50px, 50px) rotate(90deg); }
+            50% { transform: translate(0, 100px) rotate(180deg); }
+            75% { transform: translate(-50px, 50px) rotate(270deg); }
+            100% { transform: translate(0, 0) rotate(360deg); }
+        }
+
+        /* Particle background effect */
+        .vfx-particle {
+            position: fixed;
+            background: white;
+            border-radius: 50%;
+            z-index: -2;
+            opacity: 0.1;
+            animation: particle-float linear infinite;
+        }
+
+        @keyframes particle-float {
+            from { transform: translateY(0) rotate(0deg); }
+            to { transform: translateY(-100vh) rotate(360deg); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            color: var(--accent-color);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-left: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: var(--accent-color);
+            bottom: -5px;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(156, 39, 176, 0.3);
+        }
+
+        .btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(156, 39, 176, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            box-shadow: none;
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Main Content */
+        .hero {
+            text-align: center;
+            padding: 80px 0 40px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradientShift 8s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            color: #636e72;
+        }
+
+        /* Game Area */
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            margin: 40px auto;
+            max-width: 800px;
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .game-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Glow effect for game container */
+        .game-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(156, 39, 176, 0.2);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+
+        .game-container:hover::after {
+            opacity: 1;
+        }
+
+        .chat-area {
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            background: var(--light-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 20px;
+            position: relative;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background: white;
+            border-top-left-radius: 5px;
+            color: var(--dark-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: var(--primary-color);
+            color: white;
+            border-top-right-radius: 5px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #dfe6e9;
+            border-radius: 30px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-area input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.2);
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        /* Instructions Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: var(--primary-color);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark-color);
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--error-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .game-container {
+                padding: 20px;
+            }
+            
+            .message {
+                max-width: 85%;
+            }
+        }
+
+        /* Animations */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Results Section */
+        .result-section {
+            text-align: center;
+            padding: 20px;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-section h3 {
+            color: var(--success-color);
+            margin-bottom: 10px;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-color);
+            opacity: 0;
+        }
+
+        /* Quick reply buttons */
+        .quick-replies {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-reply-btn {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quick-reply-btn:hover {
+            background: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        /* Pulsing glow for quick reply buttons */
+        .quick-reply-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0),
+                rgba(255,255,255,0.3),
+                rgba(255,255,255,0)
+            );
+            transform: rotate(30deg);
+            animation: shine 3s infinite;
+            opacity: 0;
+        }
+
+        @keyframes shine {
+            0% { opacity: 0; left: -50%; }
+            20% { opacity: 0.5; }
+            100% { opacity: 0; left: 150%; }
+        }
+
+        .quick-reply-btn:hover::before {
+            animation: shine 1.5s infinite;
+        }
+
+        /* Magic sparkle effect */
+        .magic-sparkle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+            box-shadow: 0 0 10px 2px white;
+            animation: sparkle 1s ease-out;
+        }
+
+        @keyframes sparkle {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Stumped section */
+        .stumped-section {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 152, 0, 0.1);
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .stumped-section.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .stumped-section h3 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body ng-controller="GameController">
+    <!-- Floating orbs background elements -->
+    <div class="vfx-orb"></div>
+    <div class="vfx-orb"></div>
+    <div class="vfx-orb"></div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <a href="#" class="logo">
+                    <i class="fas fa-magic"></i> GuessGenie
+                </a>
+                <ul class="nav-links">
+                    <li><a href="#" ng-click="showInstructions()">How to Play</a></li>
+                    <li><a href="#" ng-click="resetGame()">New Game</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h1>GuessGenie</h1>
+            <p>Think of something, and I'll read your mind to guess it! From bananas to bicycles, I can guess them all!</p>
+            <button class="btn pulse" ng-click="startGame()" ng-hide="gameStarted">
+                <i class="fas fa-play"></i> Start Game
+            </button>
+        </section>
+
+        <section class="game-container" ng-show="gameStarted">
+            <div class="chat-area" id="chatArea">
+                <div class="message bot-message" ng-repeat="message in chatMessages track by $index" ng-bind-html="message.text">
+                </div>
+            </div>
+
+            <div class="input-area" ng-show="awaitingAnswer && !showQuickReplies">
+                <input type="text" ng-model="userAnswer" placeholder="Type your answer here..." 
+                       ng-keyup="$event.keyCode === 13 && submitAnswer()" autofocus>
+                <button class="btn" ng-click="submitAnswer()">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </div>
+
+            <div class="quick-replies" ng-show="showQuickReplies">
+                <button class="quick-reply-btn" ng-repeat="reply in quickReplies" ng-click="selectQuickReply(reply)">
+                    {{reply}}
+                </button>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-outline" ng-click="resetGame()">
+                    <i class="fas fa-redo"></i> Restart
+                </button>
+            </div>
+
+            <div class="result-section" ng-class="{'show': gameWon || gameLost}">
+                <h3 ng-if="gameWon"><i class="fas fa-trophy"></i> I knew it! Your mind is an open book to me!</h3>
+                <h3 ng-if="gameLost"><i class="fas fa-lightbulb"></i> You've stumped me! What were you thinking of?</h3>
+                <div ng-if="gameLost" style="margin-top: 15px;">
+                    <input type="text" ng-model="correctAnswer" placeholder="Enter the correct answer">
+                    <button class="btn" ng-click="learnAnswer()" style="margin-left: 10px;">
+                        <i class="fas fa-brain"></i> Teach Me
+                    </button>
+                </div>
+                <button class="btn" ng-click="resetGame()" style="margin-top: 15px;">
+                    <i class="fas fa-play"></i> Play Again
+                </button>
+            </div>
+
+            <!-- New stumped section for when all answers are no -->
+            <div class="stumped-section" ng-class="{'show': isStumped}">
+                <h3><i class="fas fa-crown"></i> You win! I couldn't guess your object!</h3>
+                <p style="margin: 15px 0;">What were you thinking of?</p>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    <input type="text" ng-model="userObject" placeholder="Enter your object">
+                    <button class="btn" ng-click="revealObject()">
+                        <i class="fas fa-check"></i> Submit
+                    </button>
+                </div>
+                <button class="btn" ng-click="resetGame()" style="margin-top: 15px;">
+                    <i class="fas fa-play"></i> Play Again
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Instructions Modal -->
+    <div class="modal" ng-class="{'active': showModal}">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>How to Play GuessGenie</h2>
+                <button class="close-modal" ng-click="toggleModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3 style="margin-bottom: 15px; color: var(--primary-color);">The Magical Guessing Game</h3>
+                <p style="margin-bottom: 15px;">1. <strong>Think of anything</strong> - From everyday objects to exotic animals, food items to electronic gadgets.</p>
+                <p style="margin-bottom: 15px;">2. <strong>Answer questions</strong> - I'll ask simple yes/no questions to narrow down possibilities.</p>
+                <p style="margin-bottom: 15px;">3. <strong>Be precise</strong> - Answer truthfully to help me guess correctly.</p>
+                <p style="margin-bottom: 15px;">4. <strong>See the magic</strong> - Watch as I zero in on your thought through logical deduction!</p>
+                <p style="margin-bottom: 15px;">5. <strong>Expand my knowledge</strong> - If I can't guess, teach me for next time!</p>
+                
+                <div style="margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                    <h4 style="color: var(--accent-color); margin-bottom: 10px;">Pro Tips</h4>
+                    <ul style="padding-left: 20px;">
+                        <li style="margin-bottom: 8px;">The more specific your object, the more impressive when I guess it</li>
+                        <li style="margin-bottom: 8px;">I learn from each game, becoming more psychic over time</li>
+                        <li style="margin-bottom: 8px;">Try unusual combinations to test my abilities</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        angular.module('guessGenie', [])
+            .controller('GameController', ['$scope', '$timeout', '$sce', function($scope, $timeout, $sce) {
+                // Game state variables
+                $scope.gameStarted = false;
+                $scope.awaitingAnswer = false;
+                $scope.gameWon = false;
+                $scope.gameLost = false;
+                $scope.isStumped = false; // New flag for when all answers are no
+                $scope.showModal = false;
+                $scope.userAnswer = '';
+                $scope.correctAnswer = '';
+                $scope.userObject = ''; // New variable for user's object
+                $scope.chatMessages = [];
+                $scope.showQuickReplies = false;
+                $scope.quickReplies = [];
+                
+                // Decision tree for guessing
+                const decisionTree = {
+                    question: "Is it something you can eat?",
+                    yes: {
+                        question: "Is it a fruit?",
+                        yes: {
+                            question: "Is it typically yellow?",
+                            yes: {
+                                result: "banana"
+                            },
+                            no: {
+                                question: "Is it red?",
+                                yes: {
+                                    result: "apple"
+                                },
+                                no: {
+                                    result: "orange"
+                                }
+                            }
+                        },
+                        no: {
+                            question: "Is it a vegetable?",
+                            yes: {
+                                question: "Is it green?",
+                                yes: {
+                                    result: "broccoli"
+                                },
+                                no: {
+                                    result: "carrot"
+                                }
+                            },
+                            no: {
+                                question: "Is it sweet?",
+                                yes: {
+                                    result: "chocolate"
+                                },
+                                no: {
+                                    result: "bread"
+                                }
+                            }
+                        }
+                    },
+                    no: {
+                        question: "Is it something you use for transportation?",
+                        yes: {
+                            question: "Does it have wheels?",
+                            yes: {
+                                question: "Is it motorized?",
+                                yes: {
+                                    result: "car"
+                                },
+                                no: {
+                                    result: "bicycle"
+                                }
+                            },
+                            no: {
+                                result: "boat"
+                            }
+                        },
+                        no: {
+                            question: "Is it electronic?",
+                            yes: {
+                                question: "Do you use it for communication?",
+                                yes: {
+                                    result: "phone"
+                                },
+                                no: {
+                                    result: "computer"
+                                }
+                            },
+                            no: {
+                                question: "Is it something you wear?",
+                                yes: {
+                                    result: "shirt"
+                                },
+                                no: {
+                                    result: "chair"
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                // Current game state
+                let currentNode = decisionTree;
+                let guessPath = [];
+                let allAnswersNo = true; // Track if all answers were no
+                
+                // Initialize VFX
+                function initVFX() {
+                    // Create particles
+                    for (let i = 0; i < 30; i++) {
+                        const particle = document.createElement('div');
+                        particle.className = 'vfx-particle';
+                        
+                        // Random properties
+                        const size = Math.random() * 5 + 1;
+                        const posX = Math.random() * 100;
+                        const duration = Math.random() * 20 + 10;
+                        const delay = Math.random() * 20;
+                        
+                        particle.style.width = `${size}px`;
+                        particle.style.height = `${size}px`;
+                        particle.style.left = `${posX}%`;
+                        particle.style.animationDuration = `${duration}s`;
+                        particle.style.animationDelay = `-${delay}s`;
+                        
+                        document.body.appendChild(particle);
+                    }
+
+                    // Add sparkle effect on quick reply click
+                    document.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('quick-reply-btn')) {
+                            createSparkle(e.clientX, e.clientY);
+                        }
+                    });
+                }
+
+                // Create sparkle effect at position
+                function createSparkle(x, y) {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'magic-sparkle';
+                    sparkle.style.left = `${x}px`;
+                    sparkle.style.top = `${y}px`;
+                    document.body.appendChild(sparkle);
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        sparkle.remove();
+                    }, 1000);
+                }
+
+                // Initialize the game
+                $scope.startGame = function() {
+                    $scope.gameStarted = true;
+                    $scope.gameWon = false;
+                    $scope.gameLost = false;
+                    $scope.isStumped = false;
+                    $scope.chatMessages = [];
+                    currentNode = decisionTree;
+                    guessPath = [];
+                    allAnswersNo = true; // Reset this flag
+                    
+                    // Initialize VFX
+                    initVFX();
+                    
+                    addBotMessage("I am GuessGenie, the magical mind reader!");
+                    $timeout(() => {
+                        addBotMessage("Think of any object, and I'll try to guess it.");
+                        $timeout(() => {
+                            addBotMessage("Ready to begin? Here's my first question...");
+                            $timeout(() => {
+                                askCurrentQuestion();
+                            }, 1000);
+                        }, 1000);
+                    }, 1000);
+                };
+                
+                // Reset the game
+                $scope.resetGame = function() {
+                    $scope.gameStarted = false;
+                    $scope.awaitingAnswer = false;
+                    $scope.gameWon = false;
+                    $scope.gameLost = false;
+                    $scope.isStumped = false;
+                    $scope.userAnswer = '';
+                    $scope.correctAnswer = '';
+                    $scope.userObject = '';
+                    $scope.showQuickReplies = false;
+                };
+                
+                // Toggle instructions modal
+                $scope.toggleModal = function() {
+                    $scope.showModal = !$scope.showModal;
+                };
+                
+                $scope.showInstructions = function() {
+                    $scope.showModal = true;
+                };
+                
+                // Add a bot message to the chat
+                function addBotMessage(text) {
+                    $scope.chatMessages.push({
+                        text: $sce.trustAsHtml(text),
+                        type: 'bot'
+                    });
+                    scrollToBottom();
+                }
+                
+                // Add a user message to the chat
+                function addUserMessage(text) {
+                    $scope.chatMessages.push({
+                        text: $sce.trustAsHtml(text),
+                        type: 'user'
+                    });
+                    scrollToBottom();
+                }
+                
+                // Scroll chat to bottom
+                function scrollToBottom() {
+                    $timeout(() => {
+                        const chatArea = document.getElementById('chatArea');
+                        chatArea.scrollTop = chatArea.scrollHeight;
+                    }, 50);
+                }
+                
+                // Ask the current question
+                function askCurrentQuestion() {
+                    if (currentNode.result) {
+                        makeGuess(currentNode.result);
+                    } else {
+                        $scope.awaitingAnswer = true;
+                        $scope.showQuickReplies = true;
+                        $scope.quickReplies = ['Yes', 'No'];
+                        addBotMessage(currentNode.question);
+                    }
+                }
+                
+                // Process user answer
+                $scope.submitAnswer = function() {
+                    if (!$scope.userAnswer.trim()) return;
+                    
+                    const answer = $scope.userAnswer.trim().toLowerCase();
+                    processAnswer(answer);
+                };
+                
+                // Select quick reply
+                $scope.selectQuickReply = function(reply) {
+                    const answer = reply.toLowerCase();
+                    processAnswer(answer);
+                };
+                
+                // Process the answer
+                function processAnswer(answer) {
+                    const isYes = answer === 'yes' || answer === 'y';
+                    addUserMessage(isYes ? 'Yes' : 'No');
+                    
+                    // Track if all answers are no
+                    if (isYes) {
+                        allAnswersNo = false;
+                    }
+                    
+                    $scope.userAnswer = '';
+                    $scope.showQuickReplies = false;
+                    
+                    // Record the path for learning if needed
+                    guessPath.push({
+                        question: currentNode.question,
+                        answer: isYes
+                    });
+                    
+                    // Move to next node
+                    if (isYes && currentNode.yes) {
+                        currentNode = currentNode.yes;
+                    } else if (!isYes && currentNode.no) {
+                        currentNode = currentNode.no;
+                    } else {
+                        // If we reach a dead end (no more questions and no result)
+                        if (allAnswersNo) {
+                            handleAllNoAnswers();
+                            return;
+                        }
+                    }
+                    
+                    $timeout(() => {
+                        askCurrentQuestion();
+                    }, 800);
+                }
+                
+                // Handle case when all answers are no
+                function handleAllNoAnswers() {
+                    $scope.awaitingAnswer = false;
+                    $scope.isStumped = true;
+                    addBotMessage("Wow! You've completely stumped me with your object!");
+                    addBotMessage("I couldn't guess it because all your answers were 'No' to my questions.");
+                    addBotMessage("You win! What were you thinking of?");
+                }
+                
+                // Handle user revealing their object
+                $scope.revealObject = function() {
+                    if (!$scope.userObject.trim()) return;
+                    
+                    const object = $scope.userObject.trim();
+                    addUserMessage(object);
+                    
+                    $timeout(() => {
+                        addBotMessage(`Ah, ${object}! That's why I couldn't guess it!`);
+                        $timeout(() => {
+                            addBotMessage("Would you like to teach me about this object for next time?");
+                            $scope.correctAnswer = object;
+                            $scope.gameLost = true;
+                            $scope.isStumped = false;
+                        }, 1000);
+                    }, 1000);
+                };
+                
+                // Make a guess
+                function makeGuess(object) {
+                    addBotMessage(`I believe you're thinking of... a <strong>${object}</strong>! Am I correct?`);
+                    $scope.awaitingAnswer = true;
+                    $scope.showQuickReplies = true;
+                    $scope.quickReplies = ['Yes', 'No'];
+                    $scope.guessedObject = object;
+                }
+                
+                // End the game (win or lose)
+                function endGame(won) {
+                    $scope.awaitingAnswer = false;
+                    $scope.showQuickReplies = false;
+                    if (won) {
+                        $scope.gameWon = true;
+                        createConfetti();
+                    } else {
+                        $scope.gameLost = true;
+                    }
+                }
+                
+                // Create confetti effect
+                function createConfetti() {
+                    const colors = ['#9c27b0', '#ba68c8', '#ff9800', '#4caf50', '#ffeb3b'];
+                    const container = document.querySelector('.game-container');
+                    
+                    for (let i = 0; i < 100; i++) {
+                        const confetti = document.createElement('div');
+                        confetti.className = 'confetti';
+                        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        confetti.style.left = Math.random() * 100 + '%';
+                        confetti.style.top = -10 + 'px';
+                        container.appendChild(confetti);
+                        
+                        const animationDuration = Math.random() * 3 + 2;
+                        
+                        // Animate confetti
+                        $timeout(() => {
+                            confetti.style.opacity = 1;
+                            confetti.style.transform = `rotate(${Math.random() * 360}deg) translateY(${Math.random() * 500 + 300}px)`;
+                            confetti.style.transition = `all ${animationDuration}s ease-out`;
+                            
+                            // Remove after animation
+                            $timeout(() => {
+                                confetti.remove();
+                            }, animationDuration * 1000);
+                        }, Math.random() * 500);
+                    }
+                }
+                
+                // Teach the AI a new answer
+                $scope.learnAnswer = function() {
+                    if (!$scope.correctAnswer.trim()) return;
+                    
+                    const answer = $scope.correctAnswer.trim().toLowerCase();
+                    addUserMessage(answer);
+                    
+                    // In a real application, we would update the decision tree here
+                    // For this demo, we'll just show a message
+                    $timeout(() => {
+                        addBotMessage(`Thank you! I'll remember ${answer} for next time. My knowledge grows with each game!`);
+                        $timeout(() => {
+                            $scope.resetGame();
+                        }, 2000);
+                    }, 1000);
+                };
+            }]);
+    </script>
+</body>
+</html>
